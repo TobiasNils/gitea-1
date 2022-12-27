@@ -788,7 +788,7 @@ func RegisterRoutes(m *web.Route) {
 		m.Group("/projects", func() {
 			m.Get("", org.Projects)
 			m.Get("/{id}", org.ViewProject)
-			m.Group("", func() {
+			m.Group("", func() { //nolint:dupl
 				m.Get("/new", org.NewProject)
 				m.Post("/new", web.Bind(forms.CreateProjectForm{}), org.NewProjectPost)
 				m.Group("/{id}", func() {
@@ -1129,7 +1129,7 @@ func RegisterRoutes(m *web.Route) {
 		m.Group("/projects", func() {
 			m.Get("", repo.Projects)
 			m.Get("/{id}", repo.ViewProject)
-			m.Group("", func() {
+			m.Group("", func() { //nolint:dupl
 				m.Get("/new", repo.NewProject)
 				m.Post("/new", bindIgnErr(forms.CreateProjectForm{}), repo.NewProjectPost)
 				m.Group("/{id}", func() {
