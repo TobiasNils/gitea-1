@@ -60,6 +60,9 @@ func userAssignment(ctx *context.Context, errCb func(int, string, interface{})) 
 			}
 		} else {
 			if ctx.ContextUser.IsOrganization() {
+				if ctx.Org == nil {
+					ctx.Org = &context.Organization{}
+				}
 				ctx.Org.Organization = (*org_model.Organization)(ctx.ContextUser)
 				ctx.Data["Org"] = ctx.Org.Organization
 			}
