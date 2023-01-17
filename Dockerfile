@@ -1,5 +1,5 @@
 #Build stage
-FROM golang:1.19-alpine3.16 AS build-env
+FROM arm64v8/golang:1.19-alpine3.16 AS build-env
 
 ARG GOPROXY
 ENV GOPROXY ${GOPROXY:-direct}
@@ -23,7 +23,7 @@ RUN if [ -n "${GITEA_VERSION}" ]; then git checkout "${GITEA_VERSION}"; fi \
 # Begin env-to-ini build
 RUN go build contrib/environment-to-ini/environment-to-ini.go
 
-FROM alpine:3.16
+FROM arm64v8/alpine:3.16
 LABEL maintainer="maintainers@gitea.io"
 
 EXPOSE 22 3000
@@ -39,7 +39,14 @@ RUN apk --no-cache add \
     s6 \
     sqlite \
     su-exec \
-    gnupg
+    gnupg \
+    py3-pip \
+    py3-numpy \
+    py3-matplotlib \
+    py3-pandas \
+    jupyter-nbconvert
+
+
 
 RUN addgroup \
     -S -g 1000 \
