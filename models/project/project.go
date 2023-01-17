@@ -106,7 +106,7 @@ func (p *Project) LoadOwner(ctx context.Context) (err error) {
 	if p.Owner != nil {
 		return nil
 	}
-	p.Owner, err = user_model.GetUserByID(ctx, p.OwnerID)
+	p.Owner, err = user_model.GetUserByIDCtx(ctx, p.OwnerID)
 	return err
 }
 
@@ -114,7 +114,7 @@ func (p *Project) LoadRepo(ctx context.Context) (err error) {
 	if p.RepoID == 0 || p.Repo != nil {
 		return nil
 	}
-	p.Repo, err = repo_model.GetRepositoryByID(ctx, p.RepoID)
+	p.Repo, err = repo_model.GetRepositoryByIDCtx(ctx, p.RepoID)
 	return err
 }
 

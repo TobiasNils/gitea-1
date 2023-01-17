@@ -78,6 +78,46 @@ func (issues IssueList) LoadRepositories() ([]*repo_model.Repository, error) {
 	return issues.loadRepositories(db.DefaultContext)
 }
 
+// LoadRepositories loads issues' all repositories in context
+func (issues IssueList) LoadRepositoriesCtx(ctx context.Context) ([]*repo_model.Repository, error) {
+	if len(issues) == 0 {
+		return nil, nil
+	}
+
+	repoIDs := issues.getRepoIDs()
+	repoMaps := make(map[int64]*repo_model.Repository, len(repoIDs))
+	left := len(repoIDs)
+	for left > 0 {
+		limit := db.DefaultMaxInSize
+		if left < limit {
+			limit = left
+		}
+		err := db.GetEngine(ctx).
+			In("id", repoIDs[:limit]).
+			Find(&repoMaps)
+		if err != nil {
+			return nil, fmt.Errorf("find repository: %w", err)
+		}
+		left -= limit
+		repoIDs = repoIDs[limit:]
+	}
+
+	for _, issue := range issues {
+		if issue.Repo == nil {
+			issue.Repo = repoMaps[issue.RepoID]
+		} else {
+			repoMaps[issue.RepoID] = issue.Repo
+		}
+		if issue.PullRequest != nil {
+			issue.PullRequest.BaseRepo = issue.Repo
+			if issue.PullRequest.HeadRepo == nil {
+				issue.PullRequest.HeadRepo = repoMaps[issue.PullRequest.HeadRepoID]
+			}
+		}
+	}
+	return repo_model.ValuesRepository(repoMaps), nil
+}
+
 func (issues IssueList) getPosterIDs() []int64 {
 	posterIDs := make(container.Set[int64], len(issues))
 	for _, issue := range issues {
@@ -562,6 +602,11 @@ func (issues IssueList) LoadAttachments() error {
 // LoadComments loads comments
 func (issues IssueList) LoadComments() error {
 	return issues.loadComments(db.DefaultContext, builder.NewCond())
+}
+
+// LoadComments loads comments for given context
+func (issues IssueList) LoadCommentsCtx(ctx context.Context) error {
+	return issues.loadComments(ctx, builder.NewCond())
 }
 
 // LoadDiscussComments loads discuss comments

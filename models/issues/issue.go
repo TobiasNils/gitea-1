@@ -1566,6 +1566,26 @@ func Issues(opts *IssuesOptions) ([]*Issue, error) {
 	return issues, nil
 }
 
+// Issues returns a list of issues by given conditions and context.
+func IssuesCtx(ctx context.Context, opts *IssuesOptions) ([]*Issue, error) {
+	sess := db.GetEngine(ctx).
+		Join("INNER", "repository", "`issue`.repo_id = `repository`.id")
+	opts.setupSessionWithLimit(sess)
+
+	sortIssuesSession(sess, opts.SortType, opts.PriorityRepoID)
+
+	issues := make([]*Issue, 0, opts.ListOptions.PageSize)
+	if err := sess.Find(&issues); err != nil {
+		return nil, fmt.Errorf("unable to query Issues: %w", err)
+	}
+
+	if err := IssueList(issues).LoadAttributes(); err != nil {
+		return nil, fmt.Errorf("unable to LoadAttributes for Issues: %w", err)
+	}
+
+	return issues, nil
+}
+
 // CountIssues number return of issues by given conditions.
 func CountIssues(opts *IssuesOptions) (int64, error) {
 	e := db.GetEngine(db.DefaultContext)

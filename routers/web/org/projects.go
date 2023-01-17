@@ -198,7 +198,7 @@ func DeleteProject(ctx *context.Context) {
 		return
 	}
 
-	if err := project_model.DeleteProjectByID(ctx, p.ID); err != nil {
+	if err := project_model.DeleteProjectByIDCtx(ctx, p.ID); err != nil {
 		ctx.Flash.Error("DeleteProjectByID: " + err.Error())
 	} else {
 		ctx.Flash.Success(ctx.Tr("repo.projects.deletion_success"))
@@ -302,7 +302,7 @@ func ViewProject(ctx *context.Context) {
 		boards[0].Title = ctx.Tr("repo.projects.type.uncategorized")
 	}
 
-	issuesMap, err := issues_model.LoadIssuesFromBoardList(ctx, boards)
+	issuesMap, err := issues_model.LoadIssuesFromBoardListCtx(ctx, boards)
 	if err != nil {
 		ctx.ServerError("LoadIssuesOfBoards", err)
 		return
@@ -319,7 +319,7 @@ func ViewProject(ctx *context.Context) {
 			}
 
 			if len(referencedIds) > 0 {
-				if linkedPrs, err := issues_model.Issues(ctx, &issues_model.IssuesOptions{
+				if linkedPrs, err := issues_model.IssuesCtx(ctx, &issues_model.IssuesOptions{
 					IssueIDs: referencedIds,
 					IsPull:   util.OptionalBoolTrue,
 				}); err == nil {
@@ -647,7 +647,7 @@ func MoveIssues(ctx *context.Context) {
 		return
 	}
 
-	if _, err = movedIssues.LoadRepositories(ctx); err != nil {
+	if _, err = movedIssues.LoadRepositoriesCtx(ctx); err != nil {
 		ctx.ServerError("LoadRepositories", err)
 		return
 	}

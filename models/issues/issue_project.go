@@ -95,6 +95,41 @@ func LoadIssuesFromBoard(b *project_model.Board) (IssueList, error) {
 	return issueList, nil
 }
 
+// LoadIssuesFromBoard load issues assigned to this board
+func LoadIssuesFromBoardCtx(ctx context.Context, b *project_model.Board) (IssueList, error) {
+	issueList := make([]*Issue, 0, 10)
+
+	if b.ID != 0 {
+		issues, err := IssuesCtx(ctx, &IssuesOptions{
+			ProjectBoardID: b.ID,
+			ProjectID:      b.ProjectID,
+			SortType:       "project-column-sorting",
+		})
+		if err != nil {
+			return nil, err
+		}
+		issueList = issues
+	}
+
+	if b.Default {
+		issues, err := IssuesCtx(ctx, &IssuesOptions{
+			ProjectBoardID: -1, // Issues without ProjectBoardID
+			ProjectID:      b.ProjectID,
+			SortType:       "project-column-sorting",
+		})
+		if err != nil {
+			return nil, err
+		}
+		issueList = append(issueList, issues...)
+	}
+
+	if err := IssueList(issueList).LoadCommentsCtx(ctx); err != nil {
+		return nil, err
+	}
+
+	return issueList, nil
+}
+
 // LoadIssuesFromBoardList load issues assigned to the boards
 func LoadIssuesFromBoardList(bs project_model.BoardList) (map[int64]IssueList, error) {
 	issuesMap := make(map[int64]IssueList, len(bs))
@@ -108,7 +143,19 @@ func LoadIssuesFromBoardList(bs project_model.BoardList) (map[int64]IssueList, e
 	return issuesMap, nil
 }
 
-// ChangeProjectAssign changes the project associated with an issue
+// LoadIssuesFromBoardList load issues assigned to the boards
+func LoadIssuesFromBoardListCtx(ctx context.Context, bs project_model.BoardList) (map[int64]IssueList, error) {
+	issuesMap := make(map[int64]IssueList, len(bs))
+	for i := range bs {
+		il, err := LoadIssuesFromBoardCtx(ctx, bs[i])
+		if err != nil {
+			return nil, err
+		}
+		issuesMap[bs[i].ID] = il
+	}
+	return issuesMap, nil
+}
+
 func ChangeProjectAssign(issue *Issue, doer *user_model.User, newProjectID int64) error {
 	ctx, committer, err := db.TxContext()
 	if err != nil {
