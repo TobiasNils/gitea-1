@@ -34,4 +34,4 @@ jobs:
         
     - name: Build and push the Docker image
       run: |
-        docker buildx build --push --tag $DOCKERHUB_USERNAME/$REPOSITORY_NAME:v1.18.0-org_projects --platform arm64 --file Dockerfile . 
+        docker buildx build --push --tag $DOCKERHUB_USERNAME/$REPOSITORY_NAME:v1.18.0-org_projects --platform arm64 . 
