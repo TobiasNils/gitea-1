@@ -13,7 +13,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout the code       
+      uses: actions/checkout@v1   
+      
+    - name: Set up Docker Buildx      
+      uses: crazy-max/ghaction-docker-buildx@v1      
+      with:        
+        version: latest 
+        
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag gitea:v1.18.0-org_projects --platform arm64
-
+      run: docker buildx . --file Dockerfile --tag gitea:v1.18.0-org_projects --platform arm64
