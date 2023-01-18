@@ -22,4 +22,4 @@ jobs:
         version: latest 
         
     - name: Build the Docker image
-      run: docker buildx . --file Dockerfile --tag gitea:v1.18.0-org_projects --platform arm64
+      run: docker buildx build . --file Dockerfile --tag gitea:v1.18.0-org_projects --platform arm64
